@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -18,8 +19,8 @@ type cliCommand struct {
 }
 
 type config struct {
-	next     int
-	previous int
+	nextURL     *string
+	previousURL *string
 }
 
 func init() {
@@ -64,33 +65,38 @@ func commandHelp(cfg *config) error {
 }
 
 func commandMap(cfg *config) error {
-	id := cfg.next
 
-	for i := 1; i <= id; i++ {
-		data := pokeapi.ListLocations(i)
-		fmt.Println(data.Name)
+	locationData, err := pokeapi.ListLocations(cfg.nextURL)
+	if err != nil {
+		return err
 	}
 
-	cfg.next = id + 20
-	cfg.previous = id
+	cfg.nextURL = locationData.Next
+	cfg.previousURL = locationData.Previous
+
+	for _, location := range locationData.Results {
+		fmt.Println(location.Name)
+	}
 
 	return nil
 }
 
 func commandMapB(cfg *config) error {
-	id := cfg.previous
-	if id == 0 {
-		fmt.Println("you're on the first page")
-		return nil
+	if cfg.previousURL == nil {
+		return errors.New("you're on the first page")
 	}
 
-	for i := 1; i <= id; i++ {
-		data := pokeapi.ListLocations(i)
-		fmt.Println(data.Name)
+	locationData, err := pokeapi.ListLocations(cfg.previousURL)
+	if err != nil {
+		return err
 	}
 
-	cfg.next = id
-	cfg.previous = id - 20
+	cfg.nextURL = locationData.Next
+	cfg.previousURL = locationData.Previous
+
+	for _, location := range locationData.Results {
+		fmt.Println(location.Name)
+	}
 
 	return nil
 

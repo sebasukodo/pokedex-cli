@@ -2,45 +2,47 @@ package pokeapi
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 )
 
-type MapData struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Location struct {
+type ShallowLocations struct {
+	Count    int     `json:"count"`
+	Next     *string `json:"next"`
+	Previous *string `json:"previous"`
+	Results  []struct {
 		Name string `json:"name"`
 		URL  string `json:"url"`
-	} `json:"location"`
+	} `json:"results"`
 }
 
-func ListLocations(id int) MapData {
+func ListLocations(pageURL *string) (ShallowLocations, error) {
 	url := baseURL + "location-area/"
-	fullUrl := fmt.Sprintf("%v%v/", url, id)
 
-	res, err := http.Get(fullUrl)
+	if pageURL != nil {
+		url = *pageURL
+	}
+
+	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return ShallowLocations{}, err
 	}
 
 	read, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return ShallowLocations{}, err
 	}
 	if res.StatusCode > 299 {
 		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, read)
 	}
-
 	defer res.Body.Close()
 
-	var data MapData
+	var data ShallowLocations
 	if err := json.Unmarshal(read, &data); err != nil {
-		log.Fatal(err)
+		return ShallowLocations{}, err
 	}
 
-	return data
+	return data, nil
 
 }
