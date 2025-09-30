@@ -1,4 +1,4 @@
-package main
+package pokeapi
 
 import (
 	"encoding/json"
@@ -8,12 +8,18 @@ import (
 	"net/http"
 )
 
-const (
-	baseURL = "https://pokeapi.co/api/v2/location-area/"
-)
+type MapData struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Location struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"location"`
+}
 
-func getAPIInfo(id int) MapData {
-	fullUrl := fmt.Sprintf("%v%v/", baseURL, id)
+func ListLocations(id int) MapData {
+	url := baseURL + "location-area/"
+	fullUrl := fmt.Sprintf("%v%v/", url, id)
 
 	res, err := http.Get(fullUrl)
 	if err != nil {
@@ -37,13 +43,4 @@ func getAPIInfo(id int) MapData {
 
 	return data
 
-}
-
-type MapData struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Location struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"location"`
 }

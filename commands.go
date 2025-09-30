@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/sebasukodo/pokedex-cli/internal/pokeapi"
 )
 
 // initialize empty map, because CommandHelp() is relying on commands
@@ -65,7 +67,7 @@ func commandMap(cfg *config) error {
 	id := cfg.next
 
 	for i := 1; i <= id; i++ {
-		data := getAPIInfo(i)
+		data := pokeapi.ListLocations(i)
 		fmt.Println(data.Name)
 	}
 
@@ -83,7 +85,7 @@ func commandMapB(cfg *config) error {
 	}
 
 	for i := 1; i <= id; i++ {
-		data := getAPIInfo(i)
+		data := pokeapi.ListLocations(i)
 		fmt.Println(data.Name)
 	}
 
