@@ -16,12 +16,11 @@ func main() {
 		scanner.Scan()
 		input := scanner.Text()
 
-		if strings.ToLower(input) == "q" || strings.ToLower(input) == "quit" {
-			break
+		if v, ok := commands[strings.ToLower(input)]; ok {
+			v.callback()
+		} else {
+			fmt.Println("Unknown command")
 		}
-
-		words := strings.Fields(strings.ToLower(input))
-		fmt.Println("Your command was:", words[0])
 
 	}
 }
