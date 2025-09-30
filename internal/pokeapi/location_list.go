@@ -2,6 +2,7 @@ package pokeapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -31,7 +32,10 @@ func ExploreLocation(id string) (SpecificLocations, error) {
 			return SpecificLocations{}, err
 		}
 		if res.StatusCode > 299 {
-			log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, read)
+			if res.StatusCode == 404 {
+				return SpecificLocations{}, fmt.Errorf("%v is not a valid location", id)
+			}
+			return SpecificLocations{}, fmt.Errorf("response failed with status code: %d and\nbody: %s", res.StatusCode, read)
 		}
 		defer res.Body.Close()
 

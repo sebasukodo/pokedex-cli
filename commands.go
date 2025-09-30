@@ -64,31 +64,21 @@ func commandExplore(cfg *config, input []string) error {
 		return fmt.Errorf("usage: explore <location-area>")
 	}
 
-	locationData, err := pokeapi.ListLocations(cfg.nextURL)
+	specificLocationData, err := pokeapi.ExploreLocation(input[1])
 	if err != nil {
 		return err
 	}
 
-	for _, value := range locationData.Results {
-		if value.Name == input[1] {
-			specificLocationData, err := pokeapi.ExploreLocation(input[1])
-			if err != nil {
-				return err
-			}
-
-			fmt.Printf("Exploring %v...\n", input[1])
-			fmt.Println("Found Pokemon:")
-			var text string
-			for _, pokemon := range specificLocationData.PokemonEncounters {
-				text += fmt.Sprintf(" - %v\n", pokemon.Pokemon.Name)
-			}
-			fmt.Println(strings.TrimSuffix(text, "\n"))
-
-			return nil
-		}
+	fmt.Printf("Exploring %v...\n", specificLocationData.Location.Name)
+	fmt.Println("Found Pokemon:")
+	var text string
+	for _, pokemon := range specificLocationData.PokemonEncounters {
+		text += fmt.Sprintf(" - %v\n", pokemon.Pokemon.Name)
 	}
+	fmt.Println(strings.TrimSuffix(text, "\n"))
 
-	return fmt.Errorf("%v is not a valid location", input[1])
+	return nil
+
 }
 
 func commandHelp(cfg *config, input []string) error {
