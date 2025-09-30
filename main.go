@@ -17,8 +17,13 @@ func main() {
 		scanner.Scan()
 		input := scanner.Text()
 
-		if v, ok := commands[strings.ToLower(input)]; ok {
-			if err := v.callback(cfg); err != nil {
+		inputArray := strings.Fields(strings.ToLower(input))
+		if len(inputArray) == 0 {
+			continue
+		}
+
+		if v, ok := commands[inputArray[0]]; ok {
+			if err := v.callback(cfg, inputArray); err != nil {
 				fmt.Println(err)
 			}
 		} else {

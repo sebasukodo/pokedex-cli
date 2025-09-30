@@ -15,7 +15,7 @@ var commands map[string]cliCommand
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
 type config struct {
@@ -29,6 +29,11 @@ func init() {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Display all available Pokemon in given area",
+			callback:    commandExplore,
 		},
 		"help": {
 			name:        "help",
@@ -48,13 +53,45 @@ func init() {
 	}
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, input []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandExplore(cfg *config, input []string) error {
+	if len(input) < 2 {
+		return fmt.Errorf("usage: explore <location-area>")
+	}
+
+	locationData, err := pokeapi.ListLocations(cfg.nextURL)
+	if err != nil {
+		return err
+	}
+
+	for _, value := range locationData.Results {
+		if value.Name == input[1] {
+			specificLocationData, err := pokeapi.ExploreLocation(input[1])
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("Exploring %v...\n", input[1])
+			fmt.Println("Found Pokemon:")
+			var text string
+			for _, pokemon := range specificLocationData.PokemonEncounters {
+				text += fmt.Sprintf(" - %v\n", pokemon.Pokemon.Name)
+			}
+			fmt.Println(strings.TrimSuffix(text, "\n"))
+
+			return nil
+		}
+	}
+
+	return fmt.Errorf("%v is not a valid location", input[1])
+}
+
+func commandHelp(cfg *config, input []string) error {
 	text := "Welcome to the Pokedex!\nUsage:\n\n"
 	for key, value := range commands {
 		text += fmt.Sprintf("%v: %v\n", key, value.description)
@@ -64,7 +101,7 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, input []string) error {
 
 	locationData, err := pokeapi.ListLocations(cfg.nextURL)
 	if err != nil {
@@ -81,7 +118,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapB(cfg *config) error {
+func commandMapB(cfg *config, input []string) error {
 	if cfg.previousURL == nil {
 		return errors.New("you're on the first page")
 	}
