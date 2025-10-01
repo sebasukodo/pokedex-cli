@@ -48,10 +48,15 @@ func init() {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
-		"list": {
-			name:        "list",
+		"inspect": {
+			name:        "inspect <Pokemon>",
+			description: "Display stats to one of your caught Pokemon",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
 			description: "List all caught Pokemon",
-			callback:    commandList,
+			callback:    commandPokedex,
 		},
 		"map": {
 			name:        "map",
@@ -77,13 +82,13 @@ func commandCatch(cfg *config, input []string) error {
 		return err
 	}
 
-	fmt.Println("Throwing a Pokeball at ", input[1], "...")
+	fmt.Println("Throwing a Pokeball at", input[1], "...")
 
 	if !ok {
-		fmt.Println(input[1], " escaped!")
+		fmt.Println(input[1], "escaped!")
 	} else {
 		dex.Add(pokemon)
-		fmt.Println(input[1], " was caught!")
+		fmt.Println(input[1], "was caught!")
 	}
 
 	return nil
@@ -127,8 +132,15 @@ func commandHelp(cfg *config, input []string) error {
 	return nil
 }
 
-func commandList(cfg *config, input []string) error {
-	dex.List()
+func commandInspect(cfg *config, input []string) error {
+
+	if len(input) < 2 {
+		return fmt.Errorf("usage: inspect <Caught Pokemon>")
+	}
+
+	if err := dex.InspectStats(input[1]); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -168,4 +180,9 @@ func commandMapB(cfg *config, input []string) error {
 
 	return nil
 
+}
+
+func commandPokedex(cfg *config, input []string) error {
+	dex.List()
+	return nil
 }

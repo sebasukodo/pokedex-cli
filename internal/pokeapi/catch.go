@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
+	"math/rand/v2"
 	"net/http"
 )
 
@@ -56,5 +58,12 @@ func CatchPokemon(name string) (Pokemon, bool, error) {
 		return Pokemon{}, false, err
 	}
 
-	return pokemon, true, nil
+	baseChance := 75.0 //the higher the better chances low exp pokemon have
+	slope := -0.004    //the lower the better chances high exp pokemon have
+	catchChance := (baseChance * math.Exp(slope*float64(pokemon.BaseExperience))) / 100
+	random := rand.Float64()
+
+	caught := random < catchChance
+
+	return pokemon, caught, nil
 }
