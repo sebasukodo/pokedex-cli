@@ -9,8 +9,9 @@ import (
 	"github.com/sebasukodo/pokedex-cli/internal/pokeapi"
 )
 
-// initialize empty map, because CommandHelp() is relying on commands
+// initialize empty maps
 var commands map[string]cliCommand
+var dex pokeapi.Pokedex
 
 type cliCommand struct {
 	name        string
@@ -24,14 +25,21 @@ type config struct {
 }
 
 func init() {
+	dex = pokeapi.NewPokedex()
+
 	commands = map[string]cliCommand{
+		"catch": {
+			name:        "catch <Pokemon>",
+			description: "Try to catch a Pokemon",
+			callback:    commandCatch,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
 		"explore": {
-			name:        "explore",
+			name:        "explore <location-name/id>",
 			description: "Display all available Pokemon in given area",
 			callback:    commandExplore,
 		},
@@ -39,6 +47,11 @@ func init() {
 			name:        "help",
 			description: "Displays a help message",
 			callback:    commandHelp,
+		},
+		"list": {
+			name:        "list",
+			description: "List all caught Pokemon",
+			callback:    commandList,
 		},
 		"map": {
 			name:        "map",
@@ -51,6 +64,29 @@ func init() {
 			callback:    commandMapB,
 		},
 	}
+
+}
+
+func commandCatch(cfg *config, input []string) error {
+	if len(input) < 2 {
+		return fmt.Errorf("usage: catch <Pokemon>")
+	}
+
+	pokemon, ok, err := pokeapi.CatchPokemon(input[1])
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Throwing a Pokeball at ", input[1], "...")
+
+	if !ok {
+		fmt.Println(input[1], " escaped!")
+	} else {
+		dex.Add(pokemon)
+		fmt.Println(input[1], " was caught!")
+	}
+
+	return nil
 }
 
 func commandExit(cfg *config, input []string) error {
@@ -88,6 +124,11 @@ func commandHelp(cfg *config, input []string) error {
 	}
 	text = strings.TrimSuffix(text, "\n")
 	fmt.Println(text)
+	return nil
+}
+
+func commandList(cfg *config, input []string) error {
+	dex.List()
 	return nil
 }
 

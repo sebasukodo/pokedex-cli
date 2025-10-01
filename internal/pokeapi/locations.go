@@ -6,16 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"time"
-
-	"github.com/sebasukodo/pokedex-cli/internal/pokecache"
 )
-
-var cache *pokecache.Cache
-
-func init() {
-	cache = pokecache.NewCache(5 * time.Minute)
-}
 
 func ExploreLocation(id string) (SpecificLocations, error) {
 	url := baseURL + "location-area/" + id
